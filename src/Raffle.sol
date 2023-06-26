@@ -6,17 +6,18 @@ import {VRFCoordinatorV2Interface} from "@chainlink/contracts/src/v0.8/interface
 import {VRFConsumerBaseV2} from "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 
-error Raffle__lessETHSent();
-error Raffle__ethTxnFailed();
-error Raffle__Calculating();
-error Raffle__upkeedNotNeeded(uint256 balance, uint256 lotteryState, uint256 intervalPassed);
-
 /**
  * @title Lottery Contract
  * @author Shikhar Agarwal
  * @dev Implements Chainlink VRF and Chainlink Automation
 */
 contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
+    // Errors
+    error Raffle__lessETHSent();
+    error Raffle__ethTxnFailed();
+    error Raffle__Calculating();
+    error Raffle__upkeepNotNeeded(uint256 balance, uint256 lotteryState, uint256 intervalPassed);
+
     enum LotteryState {
         OPEN,
         CALCULATING
@@ -78,7 +79,7 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
     function performUpkeep(bytes calldata /* performData */) external override {
         (bool upKeepNeeded, ) = checkUpkeep("");
         if (!upKeepNeeded) {
-            revert Raffle__upkeedNotNeeded(address(this).balance, uint256(lotteryState), block.timestamp - lastTimeStamp);
+            revert Raffle__upkeepNotNeeded(address(this).balance, uint256(lotteryState), block.timestamp - lastTimeStamp);
         }
 
         uint256 reqId = i_vrfCoordinator.requestRandomWords(
